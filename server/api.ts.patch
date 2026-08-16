@@ -1,0 +1,14 @@
+--- server/api.ts
++++ server/api.ts
+@@ -10,6 +10,12 @@
+   }
+ };
+ 
++// Debug endpoint
++import fs from 'fs';
++router.get('/debug-logs', (req, res) => {
++  res.json({ success: true });
++});
++
+ // Login Route
+ router.post('/login', async (req, res) => {
