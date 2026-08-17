@@ -44,71 +44,55 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white font-sans">
-      {/* Cột trái: Hình nền anh Nam (chỉ hiển thị trên màn hình lớn) */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
-        {/* Lớp màu gradient overlay để làm tối bớt hình nền và làm nổi bật text */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent z-10"></div>
+    <div className="min-h-screen relative flex items-center justify-center font-sans bg-slate-900 px-4 py-12 sm:px-6 lg:px-8">
+      {/* Full Screen Background cho cả Mobile và Desktop */}
+      <div className="absolute inset-0 z-0">
         <img 
           src="/bg-login.png" 
           alt="Nguyễn Thành Nam" 
-          className="absolute inset-0 w-full h-full object-cover opacity-90"
+          className="w-full h-full object-cover object-top opacity-80"
           onError={(e) => {
-            // Nếu chưa upload ảnh bg-login.png, hiển thị màu nền mặc định
             e.currentTarget.style.display = 'none';
           }}
         />
-        <div className="absolute bottom-0 left-0 right-0 p-12 z-20">
-          <div className="flex items-center gap-3 mb-4">
-            <h2 className="text-4xl font-extrabold text-white tracking-tight leading-tight drop-shadow-md">
-              Nguyễn Thành Nam
-            </h2>
+        {/* Gradient overlay để form và text nổi bật hơn */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-slate-900/60 to-slate-900/90 backdrop-blur-[2px]"></div>
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-md">
+        {/* Branding & Logo */}
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/Logo.png" 
+              alt="Logo" 
+              className="h-24 w-auto object-contain drop-shadow-xl"
+              onError={(e) => { 
+                e.currentTarget.style.display = 'none';
+              }} 
+            />
           </div>
-          <p className="text-lg text-sky-400 font-bold max-w-md drop-shadow-md mb-2">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight drop-shadow-md">
+            Nguyễn Thành Nam
+          </h2>
+          <p className="mt-2 text-sky-400 font-bold drop-shadow-md text-lg">
             Cựu vận động viên quốc gia
           </p>
         </div>
-      </div>
 
-      {/* Cột phải: Form đăng nhập */}
-      <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 bg-white relative">
-        {/* Background mờ cho mobile khi không có cột trái */}
-        <div className="absolute inset-0 lg:hidden opacity-5 z-0">
-          <img src="/bg-login.png" alt="Background" className="w-full h-full object-cover" />
-        </div>
-
-        <div className="mx-auto w-full max-w-sm lg:w-[400px] z-10">
-          <div className="text-center lg:text-left mb-10">
-            {/* Logo ở form đăng nhập */}
-            <div className="h-20 w-auto flex items-center justify-center lg:justify-start shrink-0 overflow-hidden relative bg-transparent mb-8">
-              <div className="absolute inset-0 lg:inset-auto lg:left-0 lg:right-auto bg-sky-500 rounded-2xl flex items-center justify-center text-white w-20 h-20" id="logo-fallback-login">
-                <Droplets className="w-10 h-10" />
-              </div>
-              <img src="/Logo.png" alt="Logo" className="h-full w-auto object-contain relative z-10" onError={(e) => { 
-                e.currentTarget.style.display = 'none';
-                const fallback = document.getElementById('logo-fallback-login');
-                if(fallback) fallback.style.display = 'flex';
-              }} onLoad={(e) => {
-                const fallback = document.getElementById('logo-fallback-login');
-                if(fallback) fallback.style.display = 'none';
-              }} />
-            </div>
-
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+        {/* Glassmorphism Form Card */}
+        <div className="bg-white/95 backdrop-blur-xl shadow-2xl rounded-3xl p-6 sm:p-10 border border-white/20">
+          <div className="mb-8 text-center">
+            <h3 className="text-2xl font-bold text-slate-900">
               {isLogin ? 'Đăng nhập' : 'Tạo tài khoản'}
-            </h2>
-            <p className="mt-2 text-sm text-slate-500 font-medium">
+            </h3>
+            <p className="mt-1 text-sm text-slate-500 font-medium">
               {isLogin ? 'Chào mừng bạn quay trở lại hệ thống' : 'Điền thông tin để đăng ký học bơi'}
             </p>
-            
-            <div className="mt-6 lg:hidden">
-              <h3 className="text-2xl font-bold text-sky-700">Nguyễn Thành Nam</h3>
-              <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mt-1">Hệ thống quản lý dạy bơi</p>
-            </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm lg:bg-transparent py-8 px-4 shadow-xl shadow-slate-200/40 lg:shadow-none sm:rounded-2xl lg:rounded-none sm:px-10 lg:px-0 border border-slate-100 lg:border-none">
-            <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
               {!isLogin && (
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">Họ và tên</label>
@@ -180,6 +164,5 @@ export default function Login() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
