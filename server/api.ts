@@ -38,11 +38,11 @@ router.post('/auth/login', async (req, res) => {
     const { phone, password } = req.body;
     const user = await db.getUserByPhone(phone);
     if (!user) {
-      return res.status(401).json({ error: 'Số điện thoại hoặc mật khẩu không chính xác' });
+      return res.status(401).json({ error: `Không tìm thấy tài khoản với số điện thoại: ${phone}` });
     }
     const isMatch = await bcrypt.compare(password, user.PasswordHash);
     if (!isMatch) {
-      return res.status(401).json({ error: 'Số điện thoại hoặc mật khẩu không chính xác' });
+      return res.status(401).json({ error: `Sai mật khẩu cho tài khoản: ${phone}` });
     }
     if (user.Status !== 'Active') {
       return res.status(403).json({ error: 'Tài khoản đã bị vô hiệu hóa' });

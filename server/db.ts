@@ -107,8 +107,7 @@ let inMemoryData: any = {
 async function getRows(sheetName: string) {
   const url = process.env.APPS_SCRIPT_URL;
   if (!url) {
-    console.log(`[Fallback] APPS_SCRIPT_URL not set. Using in-memory db for getRows(${sheetName})`);
-    return inMemoryData[sheetName];
+    throw new Error(`[LỖI VERCEL]: Biến môi trường APPS_SCRIPT_URL chưa được thiết lập. Vui lòng kiểm tra lại cấu hình Environment Variables trên Vercel và Deploy lại.`);
   }
   
   try {
