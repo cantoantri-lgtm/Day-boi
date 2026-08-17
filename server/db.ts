@@ -105,24 +105,34 @@ let inMemoryData: any = {
 };
 
 async function getRows(sheetName: string) {
+  const url = process.env.APPS_SCRIPT_URL;
+  if (!url) {
+    console.log(`[Fallback] APPS_SCRIPT_URL not set. Using in-memory db for getRows(${sheetName})`);
+    return inMemoryData[sheetName];
+  }
+  
   try {
-    const url = process.env.APPS_SCRIPT_URL;
-    if (!url) {
-      console.log(`[Fallback] APPS_SCRIPT_URL not set. Using in-memory db for getRows(${sheetName})`);
-      return inMemoryData[sheetName];
-    }
     const response = await fetch(url, {
       method: 'POST',
+      redirect: 'follow', // Make sure fetch follows redirects
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'getRows', sheetName })
     });
-    const json = await response.json();
-    if (json.error) throw new Error(json.error);
-    return json.data || [];
+    
+    // Check if the response is actually JSON. 
+    // Sometimes Google Apps Script returns HTML if there's a permission error or it's moved.
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      const json = await response.json();
+      if (json.error) throw new Error(json.error);
+      return json.data || [];
+    } else {
+      const text = await response.text();
+      throw new Error(`Expected JSON but got ${contentType}. Content: ${text.substring(0, 100)}...`);
+    }
   } catch (err: any) {
-    console.log(`Error reading ${sheetName}:`, err.message);
-    console.log(`[Fallback] Using in-memory db for getRows(${sheetName})`);
-    return inMemoryData[sheetName];
+    console.error(`Error reading ${sheetName}:`, err.message);
+    throw new Error(`GSheet Fetch Error: ${err.message}`);
   }
 }
 
