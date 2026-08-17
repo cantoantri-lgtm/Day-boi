@@ -3,15 +3,15 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import apiRouter from './server/api';
 
+const app = express();
+const PORT = 3000;
+
+app.use(express.json());
+
+// API routes
+app.use('/api', apiRouter);
+
 async function startServer() {
-  const app = express();
-  const PORT = 3000;
-
-  app.use(express.json());
-
-  // API routes
-  app.use('/api', apiRouter);
-
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -27,9 +27,15 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  }
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
