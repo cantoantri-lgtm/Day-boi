@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchApi } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { Plus, Edit2, Trash2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, User, MapPin, Clock, Loader2 } from 'lucide-react';
@@ -22,6 +22,7 @@ export default function ManageSchedules() {
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const detailsRef = useRef<HTMLDivElement>(null);
   
   const [showForm, setShowForm] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<any>(null);
@@ -77,6 +78,11 @@ export default function ManageSchedules() {
     setSelectedDate(date);
     const dayName = getDayOfWeekName(date);
     setFormData(prev => ({ ...prev, DayTimes: { [dayName]: { start: '08:00', end: '10:00' } } }));
+    
+    // Scroll to details section on mobile
+    setTimeout(() => {
+      detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -334,9 +340,10 @@ export default function ManageSchedules() {
                   }
                   return acc;
                 }, {} as Record<string, { primarySchedule: any, students: string[], poolName: string }>))
-                .sort((a, b) => a.primarySchedule.StartTime.localeCompare(b.primarySchedule.StartTime))
+                .sort((a, b) => (a.primarySchedule?.StartTime || '').localeCompare(b.primarySchedule?.StartTime || ''))
                 .map(group => {
                   const { primarySchedule, students, poolName } = group;
+                  if (!primarySchedule) return null;
                   const numStudents = students.length;
                   let studentsDisplay = '';
                   if (numStudents === 0) {
@@ -410,7 +417,7 @@ export default function ManageSchedules() {
         </div>
 
         {/* Selected Date Details */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm min-h-[300px]">
+        <div ref={detailsRef} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm min-h-[300px] scroll-mt-20">
           <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 text-sky-500" />
             {getDayOfWeekName(selectedDate)}, {format(selectedDate, 'dd/MM/yyyy')}
@@ -441,9 +448,10 @@ export default function ManageSchedules() {
                 }
                 return acc;
               }, {} as Record<string, { primarySchedule: any, students: string[], poolName: string }>))
-              .sort((a, b) => a.primarySchedule.StartTime.localeCompare(b.primarySchedule.StartTime))
+              .sort((a, b) => (a.primarySchedule?.StartTime || '').localeCompare(b.primarySchedule?.StartTime || ''))
               .map(group => {
                 const { primarySchedule, students, poolName } = group;
+                if (!primarySchedule) return null;
                 return (
                   <div 
                     key={primarySchedule.ScheduleID}
