@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import * as db from './db';
+import * as db from './db.js';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_prod';
