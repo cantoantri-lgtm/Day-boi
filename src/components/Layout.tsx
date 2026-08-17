@@ -55,11 +55,11 @@ export default function Layout() {
       {/* Sidebar / Bottom Nav for Mobile */}
       <nav className="bg-white border-r border-sky-100 w-full md:w-64 flex flex-col md:h-screen shrink-0 sticky top-0 z-10 shadow-sm">
         <div className="p-4 md:p-6 flex items-center gap-3 border-b border-sky-50">
-          <div className="h-12 w-auto max-w-[140px] flex items-center justify-center shrink-0 overflow-hidden relative bg-transparent">
-            <div className="absolute inset-0 bg-sky-500 rounded-xl flex items-center justify-center text-white aspect-square" id="logo-fallback">
-              <Droplets className="w-6 h-6" />
+          <div className="h-10 w-auto flex items-center justify-center shrink-0 overflow-hidden relative bg-transparent">
+            <div className="absolute inset-0 bg-sky-500 rounded-lg flex items-center justify-center text-white w-10 h-10" id="logo-fallback">
+              <Droplets className="w-5 h-5" />
             </div>
-            <img src="/logo.png" alt="Logo" className="h-full w-auto object-contain relative z-10" onError={(e) => { 
+            <img src="/Logo.png" alt="Logo" className="h-full w-auto object-contain relative z-10" onError={(e) => { 
               e.currentTarget.style.display = 'none';
               const fallback = document.getElementById('logo-fallback');
               if(fallback) fallback.style.display = 'flex';
@@ -68,9 +68,14 @@ export default function Layout() {
               if(fallback) fallback.style.display = 'none';
             }} />
           </div>
-          <h1 className="text-lg font-bold tracking-tight text-sky-900 hidden md:block leading-tight">
-            AQUA<br /><span className="text-sky-500">MANAGEMENT</span>
-          </h1>
+          <div className="hidden md:block">
+            <h1 className="text-base font-bold tracking-tight text-sky-900 leading-tight whitespace-nowrap">
+              Nguyễn Thành Nam
+            </h1>
+            <p className="text-[10px] text-sky-500 font-semibold uppercase tracking-wider mt-0.5">
+              Quản lý dạy bơi
+            </p>
+          </div>
         </div>
         
         <div className="flex-1 p-4 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible gap-1 hide-scrollbar space-y-1">
