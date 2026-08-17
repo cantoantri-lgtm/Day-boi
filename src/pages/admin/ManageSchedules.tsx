@@ -293,8 +293,8 @@ export default function ManageSchedules() {
         </div>
       </div>
 
-      {/* Grid Calendar */}
-      <div className="flex-1 border border-slate-200 bg-slate-200 gap-px grid grid-cols-7 rounded-xl overflow-hidden min-h-[600px]">
+      {/* Desktop Grid Calendar (Hidden on mobile) */}
+      <div className="hidden md:grid flex-1 border border-slate-200 bg-slate-200 gap-px grid-cols-7 rounded-xl overflow-hidden min-h-[600px]">
         {/* Day Headers */}
         {weekDaysHeader.map(d => (
           <div key={d} className="bg-sky-50 py-3 text-center font-bold text-sm text-sky-900 border-b border-slate-200 shadow-sm z-10">
@@ -311,7 +311,7 @@ export default function ManageSchedules() {
           const daySchedules = displaySchedules.filter(s => s.DayOfWeek === dayName);
 
           return (
-            <div key={i} className={`bg-white min-h-[140px] flex flex-col p-1.5 sm:p-2 ${!isCurrentMonth ? 'opacity-40' : ''}`}>
+            <div key={i} onClick={() => handleDateClick(day)} className={`bg-white min-h-[140px] flex flex-col p-1.5 sm:p-2 cursor-pointer hover:bg-slate-50 transition-colors ${!isCurrentMonth ? 'opacity-40' : ''} ${isSameDay(day, selectedDate) ? 'ring-2 ring-inset ring-sky-500' : ''}`}>
               <div className="text-right text-sm font-semibold mb-2 text-slate-400">
                 {format(day, 'd')}
               </div>
@@ -350,7 +350,7 @@ export default function ManageSchedules() {
                   return (
                     <div 
                       key={primarySchedule.ScheduleID} 
-                      onClick={() => handleEdit(primarySchedule)} 
+                      onClick={(e) => { e.stopPropagation(); handleEdit(primarySchedule); }} 
                       className="shrink-0 group cursor-pointer bg-sky-50/80 hover:bg-sky-100 border border-sky-100 p-1 sm:p-1.5 rounded transition-colors text-left relative overflow-hidden flex items-center text-[10px] sm:text-[11px] gap-1"
                       title={`${formatTime(primarySchedule.StartTime)} - ${formatTime(primarySchedule.EndTime)}${numStudents > 0 ? ': ' + students.join(', ') : ' (Chưa có học viên)'}${poolName ? ' tại ' + poolName : ''}`}
                     >
@@ -370,6 +370,114 @@ export default function ManageSchedules() {
             </div>
           )
         })}
+      </div>
+
+      {/* Mobile Split View (Hidden on desktop) */}
+      <div className="md:hidden flex flex-col gap-4">
+        {/* Condensed Calendar */}
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <div className="grid grid-cols-7 bg-sky-50 border-b border-slate-200">
+            {weekDaysHeader.map(d => (
+              <div key={d} className="py-2 text-center font-bold text-[10px] text-sky-900">
+                {d.replace('Thứ ', 'T').replace('Chủ nhật', 'CN')}
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-px bg-slate-100">
+            {days.map((day, i) => {
+              const isCurrentMonth = isSameMonth(day, monthStart);
+              const isSelected = isSameDay(day, selectedDate);
+              const dayName = getDayOfWeekName(day);
+              const daySchedules = displaySchedules.filter(s => s.DayOfWeek === dayName);
+              const hasEvents = daySchedules.length > 0;
+
+              return (
+                <div 
+                  key={i} 
+                  onClick={() => handleDateClick(day)} 
+                  className={`bg-white aspect-square flex flex-col items-center justify-center p-1 relative cursor-pointer ${!isCurrentMonth ? 'opacity-40' : ''}`}
+                >
+                  <div className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium ${isSelected ? 'bg-sky-500 text-white' : 'text-slate-700'}`}>
+                    {format(day, 'd')}
+                  </div>
+                  {hasEvents && (
+                    <div className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-sky-500"></div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Selected Date Details */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm min-h-[300px]">
+          <h3 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
+            <CalendarIcon className="w-5 h-5 text-sky-500" />
+            {getDayOfWeekName(selectedDate)}, {format(selectedDate, 'dd/MM/yyyy')}
+          </h3>
+          
+          <div className="space-y-3">
+            {displaySchedules.filter(s => s.DayOfWeek === getDayOfWeekName(selectedDate)).length === 0 ? (
+              <div className="text-center py-8 text-slate-500 italic flex flex-col items-center">
+                <div className="bg-slate-50 p-3 rounded-full mb-2">
+                  <CalendarIcon className="w-6 h-6 text-slate-300" />
+                </div>
+                Không có lịch dạy
+              </div>
+            ) : (
+              Object.values(displaySchedules.filter(s => s.DayOfWeek === getDayOfWeekName(selectedDate)).reduce((acc, schedule) => {
+                const key = `${schedule.StartTime}-${schedule.EndTime}-${schedule.PoolID}`;
+                if (!acc[key]) {
+                  acc[key] = {
+                    primarySchedule: schedule,
+                    students: [],
+                    poolName: pools.find(p => p.PoolID === schedule.PoolID)?.PoolName || ''
+                  };
+                }
+                const linkedReg = registrations.find(r => r.ScheduleID === schedule.ScheduleID);
+                const student = students.find(s => s.UserID === linkedReg?.StudentID);
+                if (student?.FullName) {
+                  acc[key].students.push(student.FullName);
+                }
+                return acc;
+              }, {} as Record<string, { primarySchedule: any, students: string[], poolName: string }>))
+              .sort((a, b) => a.primarySchedule.StartTime.localeCompare(b.primarySchedule.StartTime))
+              .map(group => {
+                const { primarySchedule, students, poolName } = group;
+                return (
+                  <div 
+                    key={primarySchedule.ScheduleID}
+                    onClick={() => handleEdit(primarySchedule)}
+                    className="border border-sky-100 bg-sky-50/50 rounded-xl p-4 cursor-pointer hover:bg-sky-50 hover:shadow-md transition-all active:scale-[0.98]"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2 font-bold text-sky-700 text-lg">
+                        <Clock className="w-5 h-5" />
+                        {formatTime(primarySchedule.StartTime)} - {formatTime(primarySchedule.EndTime)}
+                      </div>
+                      <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${primarySchedule.Status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-700'}`}>
+                        {primarySchedule.Status === 'Active' ? 'Đang học' : 'Tạm dừng'}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-1.5 mt-3">
+                      <div className="flex items-start gap-2 text-sm text-slate-600 font-medium">
+                        <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                        <span>{poolName || 'Chưa xếp hồ bơi'}</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm text-slate-600 font-medium">
+                        <User className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                        <span>
+                          {students.length > 0 ? students.join(', ') : <span className="italic text-slate-400">Chưa có học viên</span>}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Modal Form */}
